@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ats.manoharweb.models.Designation;
 import com.ats.manoharweb.models.Info;
+import com.ats.manoharweb.models.Language;
 import com.ats.manoharweb.models.MUser;
 import com.ats.manoharweb.models.UserType;
 import com.ats.manoharweb.repo.DesignationRepo;
+import com.ats.manoharweb.repo.LanguageRepo;
 import com.ats.manoharweb.repo.MUserRepo;
 import com.ats.manoharweb.repo.UserTypeRepo;
 
@@ -28,6 +30,10 @@ public class UserApiController {
 	
 	@Autowired UserTypeRepo userTypeRepo;
 	
+	@Autowired LanguageRepo langRepo;
+	
+	/************************************************************************/
+	//User
 	@RequestMapping(value = { "/getAllUsers" }, method = RequestMethod.POST)
 	public @ResponseBody List<MUser> getAllMnUsers(@RequestParam int compId){
 		
@@ -128,4 +134,84 @@ public class UserApiController {
 		return list;
 		
 	}
+	/******************************************************************************/
+	//Language
+	@RequestMapping(value = { "/getAllLanguages" }, method = RequestMethod.POST)
+	public @ResponseBody List<Language> getAllLanguages(@RequestParam int compId){
+		
+		List<Language> langList = new ArrayList<Language>();
+		try {
+			langList = langRepo.findByDelStatusAndCompanyId(0, compId);
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		return langList;
+		
+	}
+	
+	@RequestMapping(value = { "/getLanguageById" }, method = RequestMethod.POST)
+	public @ResponseBody Language getLanguageById(@RequestParam int langId, @RequestParam int compId){
+		
+		Language lang = new Language();
+		try {
+			lang = langRepo.findByLangIdAndDelStatusAndCompanyId(langId, 0, compId);
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		return lang;
+		
+	}
+	
+	@RequestMapping(value = { "/getLanguageByCode" }, method = RequestMethod.POST)
+	public @ResponseBody Language getLanguageByCode(@RequestParam String code, @RequestParam int langId,  @RequestParam int compId){
+		
+		Language lang = new Language();
+		try {
+			if(langId==0) {
+				
+				lang = langRepo.findByLangCodeIgnoreCaseAndCompanyId(code, compId);
+			}else {
+				
+				lang = langRepo.findByLangCodeIgnoreCaseAndCompanyIdAndLangIdNot(code, langId, compId);
+			}
+			
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		return lang;
+		
+	}
+	
+	@RequestMapping(value = { "/deleteLanguageById" }, method = RequestMethod.POST)
+	public @ResponseBody Info deleteLanguageById(@RequestParam int langId){
+		
+		Info info = new Info();
+		try {
+			int res = langRepo.deleteLanguage(langId);
+			if(res>0) {
+				info.setError(false);
+				info.setMessage("Language Deleted Successfully");
+			}else {
+				info.setError(true);
+				info.setMessage("Failed to Delete Language");
+			}
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		return info;		
+	}
+	
+	@RequestMapping(value = { "/addLanguage" }, method = RequestMethod.POST)
+	public @ResponseBody Language addLanguage(@RequestBody Language lang){
+		
+		Language newLang = new Language();
+		try {
+			newLang = langRepo.save(lang);
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		return newLang;		
+	}
+	
+	/***********************************************************************/
 }
