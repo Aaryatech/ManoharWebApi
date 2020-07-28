@@ -42,8 +42,8 @@ public interface MUserRepo extends JpaRepository<MUser, Integer> {
 			"    desig.designation AS ex_var4\n" + 
 			"FROM\n" + 
 			"     m_user user,\n" + 
-			"     m_user_type type,\n" + 
-			"     m_designation desig\n" + 
+			"     mn_user_type type,\n" + 
+			"     mn_designation desig\n" + 
 			"WHERE\n" + 
 			"	user.company_Id=:compId AND\n" + 
 			"    user.del_status=0 AND\n" + 
@@ -78,7 +78,7 @@ public interface MUserRepo extends JpaRepository<MUser, Integer> {
 			"            SELECT\n" + 
 			"                user_type_id     \n" + 
 			"            FROM\n" + 
-			"                m_user_type     \n" + 
+			"                mn_user_type     \n" + 
 			"            WHERE\n" + 
 			"                ex_int1 IN (:type))", nativeQuery=true)
 	public MUser getUserCradentials(@Param("username") String username, @Param("password") String password, @Param("type") int type);
@@ -96,7 +96,7 @@ public interface MUserRepo extends JpaRepository<MUser, Integer> {
 			"            SELECT\n" + 
 			"                user_type_id     \n" + 
 			"            FROM\n" + 
-			"                m_user_type     \n" + 
+			"                mn_user_type     \n" + 
 			"            WHERE\n" + 
 			"                ex_int1 = :type\n" + 
 			"        )   ", nativeQuery=true)
@@ -104,13 +104,13 @@ public interface MUserRepo extends JpaRepository<MUser, Integer> {
 	
 	@Transactional
 	@Modifying
-	@Query(value="UPDATE m_user_type SET password=:password WHERE user_id=:userId",nativeQuery=true)
+	@Query(value="UPDATE mn_user_type SET password=:password WHERE user_id=:userId",nativeQuery=true)
 	public int updatePassword(@Param("password") String password,@Param("userId") int userId);
 	
 	public MUser findByUserIdAndDelStatus(int userId, int del);
 
 	@Transactional
 	@Modifying
-	@Query(value="UPDATE `m_user_type` SET password=:newPass WHERE user_id=:userId",nativeQuery=true)
+	@Query(value="UPDATE `mn_user_type` SET password=:newPass WHERE user_id=:userId",nativeQuery=true)
 	int UpdateUserPassword(@Param("userId") int userId, @Param("newPass") String newPass);
 }
