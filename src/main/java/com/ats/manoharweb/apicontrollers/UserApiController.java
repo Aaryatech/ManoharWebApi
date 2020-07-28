@@ -122,17 +122,79 @@ public class UserApiController {
 	}
 	/********************************************************************************/
 	
-	@RequestMapping(value = { "/getAllUserTypes" }, method = RequestMethod.GET)
-	public @ResponseBody List<UserType> getAllUserTypes(){
+	@RequestMapping(value = { "/getAllUserTypes" }, method = RequestMethod.POST)
+	public @ResponseBody List<UserType> getAllUserTypes(@RequestParam int compId){
 		
 		List<UserType> list = new ArrayList<UserType>();
 		try {
-			list = userTypeRepo.findByDelStatus(0);
+			list = userTypeRepo.findByDelStatusAndComapnyIdRequired(0, compId);
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
 		return list;
 		
+	}
+	
+	
+	@RequestMapping(value = { "/addUserType" }, method = RequestMethod.POST)
+	public @ResponseBody UserType addUserType(@RequestBody UserType userTyp){
+		
+		UserType userType = new UserType();
+		try {
+			userType = userTypeRepo.save(userTyp);
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		return userType;
+	}
+	
+	@RequestMapping(value = { "/getUserTypeById" }, method = RequestMethod.POST)
+	public @ResponseBody UserType getUserTypeById(@RequestParam int userTypeId, @RequestParam int compId){
+		
+		UserType userType = new UserType();
+		try {
+			userType = userTypeRepo.findByUserTypeIdAndComapnyIdRequired(userTypeId, compId);
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		return userType;
+	}
+	
+	@RequestMapping(value = { "/deleteUserType"}, method = RequestMethod.POST)
+	public @ResponseBody Info getUserById(@RequestParam int userTypeId, @RequestParam int compId){
+		
+		Info info = new Info();
+		try {
+			int res = userTypeRepo.deleteUserTypeById(userTypeId, compId);
+			if(res>0) {
+				info.setError(false);
+				info.setMessage("User Type Deleted Successfully");
+			}else {
+				info.setError(true);
+				info.setMessage("Failed to Delete User Type");
+			}
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		return info;
+	}
+	
+	
+	@RequestMapping(value = { "/uniqueUserType" }, method = RequestMethod.POST)
+	public @ResponseBody UserType uniqueUserType(@RequestParam String userType, @RequestParam int userId, @RequestParam int compId){
+		
+		UserType user = new UserType();
+		try {
+			if(compId!=0) {
+				user = userTypeRepo.findByUserTypeNameIgnoreCaseAndComapnyIdRequiredAndUserTypeIdNot(userType, compId, userId);
+			}else {
+				user = userTypeRepo.findByUserTypeNameIgnoreCaseAndComapnyIdRequired(userType, compId);
+			}
+			
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		return user;
 	}
 	/******************************************************************************/
 	//Language
@@ -214,4 +276,7 @@ public class UserApiController {
 	}
 	
 	/***********************************************************************/
+	
+	//User Type
+	
 }
