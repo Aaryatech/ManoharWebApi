@@ -10,10 +10,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.ats.manoharweb.models.MnUser;
+import com.ats.manoharweb.models.MUser;
 
 @Repository
-public interface MnUserRepo extends JpaRepository<MnUser, Integer> {
+public interface MUserRepo extends JpaRepository<MUser, Integer> {
 
 	@Query(value="SELECT\n" + 
 			"    user.user_id,\n" + 
@@ -41,9 +41,9 @@ public interface MnUserRepo extends JpaRepository<MnUser, Integer> {
 			"    type.user_type_name AS ex_var3,\n" + 
 			"    desig.designation AS ex_var4\n" + 
 			"FROM\n" + 
-			"     mn_user user,\n" + 
-			"     mn_user_type type,\n" + 
-			"     mn_designation desig\n" + 
+			"     m_user user,\n" + 
+			"     m_user_type type,\n" + 
+			"     m_designation desig\n" + 
 			"WHERE\n" + 
 			"	user.company_Id=:compId AND\n" + 
 			"    user.del_status=0 AND\n" + 
@@ -52,23 +52,23 @@ public interface MnUserRepo extends JpaRepository<MnUser, Integer> {
 			"    user.user_type=type.user_type_id AND\n" + 
 			"    user.designation_id=desig.designation_id\n" + 
 			"    ORDER BY user.user_id DESC",nativeQuery=true)
-	List<MnUser> findByAllCompanyId(@Param("compId") int compId);
+	List<MUser> findByAllCompanyId(@Param("compId") int compId);
 	
-	MnUser findByUserIdAndDelStatusAndCompanyId(int userId, int del, int compId);
+	MUser findByUserIdAndDelStatusAndCompanyId(int userId, int del, int compId);
 	
-	MnUser findByUserMobileNoAndDelStatus(String mobNo, int del);
+	MUser findByUserMobileNoAndDelStatus(String mobNo, int del);
 	
-	MnUser findByUserMobileNoAndDelStatusAndUserIdNot(String mobNo, int del, int userId);
+	MUser findByUserMobileNoAndDelStatusAndUserIdNot(String mobNo, int del, int userId);
 	
 	@Transactional
 	@Modifying
-	@Query(value="UPDATE mn_user SET del_status=1 WHERE user_id=:userId",nativeQuery=true)
+	@Query(value="UPDATE m_user SET del_status=1 WHERE user_id=:userId",nativeQuery=true)
 	public int deleteUserById(@Param("userId") int userId);
 	
 	@Query(value="SELECT\n" + 
 			"        * \n" + 
 			"    FROM\n" + 
-			"        mn_user \n" + 
+			"        m_user \n" + 
 			"    WHERE\n" + 
 			"        user_mobile_no = :username\n" + 
 			"        AND PASSWORD = :password\n" + 
@@ -78,15 +78,15 @@ public interface MnUserRepo extends JpaRepository<MnUser, Integer> {
 			"            SELECT\n" + 
 			"                user_type_id     \n" + 
 			"            FROM\n" + 
-			"                mn_user_type     \n" + 
+			"                m_user_type     \n" + 
 			"            WHERE\n" + 
 			"                ex_int1 IN (:type))", nativeQuery=true)
-	public MnUser getUserCradentials(@Param("username") String username, @Param("password") String password, @Param("type") int type);
+	public MUser getUserCradentials(@Param("username") String username, @Param("password") String password, @Param("type") int type);
 
 	@Query(value="SELECT\n" + 
 			"        * \n" + 
 			"    FROM\n" + 
-			"        mn_user \n" + 
+			"        m_user \n" + 
 			"    WHERE\n" + 
 			"        (user_mobile_no = :username \n" + 
 			"        or user_email = :username) \n" + 
@@ -96,21 +96,21 @@ public interface MnUserRepo extends JpaRepository<MnUser, Integer> {
 			"            SELECT\n" + 
 			"                user_type_id     \n" + 
 			"            FROM\n" + 
-			"                mn_user_type     \n" + 
+			"                m_user_type     \n" + 
 			"            WHERE\n" + 
 			"                ex_int1 = :type\n" + 
 			"        )   ", nativeQuery=true)
-	MnUser forgotPassword(@Param("username") String username,  @Param("type") int type);
+	MUser forgotPassword(@Param("username") String username,  @Param("type") int type);
 	
 	@Transactional
 	@Modifying
-	@Query(value="UPDATE mn_user SET password=:password WHERE user_id=:userId",nativeQuery=true)
+	@Query(value="UPDATE m_user_type SET password=:password WHERE user_id=:userId",nativeQuery=true)
 	public int updatePassword(@Param("password") String password,@Param("userId") int userId);
 	
-	public MnUser findByUserIdAndDelStatus(int userId, int del);
+	public MUser findByUserIdAndDelStatus(int userId, int del);
 
 	@Transactional
 	@Modifying
-	@Query(value="UPDATE `mn_user` SET password=:newPass WHERE user_id=:userId",nativeQuery=true)
+	@Query(value="UPDATE `m_user_type` SET password=:newPass WHERE user_id=:userId",nativeQuery=true)
 	int UpdateUserPassword(@Param("userId") int userId, @Param("newPass") String newPass);
 }

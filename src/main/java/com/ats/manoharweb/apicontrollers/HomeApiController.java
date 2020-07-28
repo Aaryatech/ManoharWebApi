@@ -9,15 +9,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ats.manoharweb.models.ErrorMessage;
 import com.ats.manoharweb.models.LoginResponse;
-import com.ats.manoharweb.models.MnUser;
-import com.ats.manoharweb.repo.MnUserRepo;
+import com.ats.manoharweb.models.MUser;
+import com.ats.manoharweb.repo.MUserRepo;
 
 @RestController
 public class HomeApiController {
-	@Autowired MnUserRepo userRepository;
+	@Autowired MUserRepo userRepository;
 	
 	String jsonUser = "{}";
-	MnUser user = null;
+	MUser user = null;
 	ErrorMessage errorMessage;
 	
 	@RequestMapping(value = { "/login" }, method = RequestMethod.POST)

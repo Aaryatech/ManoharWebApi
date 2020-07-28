@@ -1,12 +1,12 @@
 package com.ats.manoharweb.models;
 
 public class LoginResponse {
-	MnUser user;
+	MUser user;
 	ErrorMessage errorMessage;
-	public MnUser getUser() {
+	public MUser getUser() {
 		return user;
 	}
-	public void setUser(MnUser user) {
+	public void setUser(MUser user) {
 		this.user = user;
 	}
 	public ErrorMessage getErrorMessage() {
