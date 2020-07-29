@@ -108,18 +108,92 @@ public class UserApiController {
 		return mnUser;		
 	}
 	/*****************************************************************************/
-	@RequestMapping(value = { "/getDesignations" }, method = RequestMethod.GET)
-	public @ResponseBody List<Designation> getDesignations(){
+	@RequestMapping(value = { "/getDesignations" }, method = RequestMethod.POST)
+	public @ResponseBody List<Designation> getDesignations(@RequestParam int compId){
 		
 		List<Designation> list = new ArrayList<Designation>();
 		try {
-			list = desigRepo.findByDelStatusOrderByDesignationIdDesc(0);
+			list = desigRepo.findByDelStatusAndExInt1AndIsActiveOrderByDesignationIdDesc(0, compId, 0);
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
 		return list;
 		
 	}
+	
+	@RequestMapping(value = { "/getAllDesignations" }, method = RequestMethod.POST)
+	public @ResponseBody List<Designation> getAllDesignations(@RequestParam int compId){
+		
+		List<Designation> list = new ArrayList<Designation>();
+		try {
+			list = desigRepo.findByDelStatusAndExInt1OrderByDesignationIdDesc(0, compId);
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		return list;
+		
+	}
+	
+	@RequestMapping(value = { "/getDesignationById" }, method = RequestMethod.POST)
+	public @ResponseBody Designation getDesignationById(@RequestParam int desigId, @RequestParam int compId){
+		
+		Designation desig = new Designation();
+		try {
+			desig = desigRepo.findByDesignationIdAndExInt1(desigId, compId);
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		return desig;
+	}
+	
+	@RequestMapping(value = { "/deleteDeignationById" }, method = RequestMethod.POST)
+	public @ResponseBody Info deleteDeignationById(@RequestParam int desigId, @RequestParam int compId){
+		
+		Info info = new Info();
+		try {
+			int res = desigRepo.deleteDesgnation(desigId, compId);
+			if(res>0) {
+				info.setError(false);
+				info.setMessage("Designation Deleted Successfully");
+			}else {
+				info.setError(true);
+				info.setMessage("Failed to Delete Designation");
+			}
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		return info;		
+	}
+	
+	@RequestMapping(value = { "/insertDesignation" }, method = RequestMethod.POST)
+	public @ResponseBody Designation insertDesignation(@RequestBody Designation designation){
+		
+		Designation desig = new Designation();
+		try {
+			desig = desigRepo.save(designation);
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		return desig;
+	}
+	
+	@RequestMapping(value = { "/getDesignationByName" }, method = RequestMethod.POST)
+	public @ResponseBody Designation getDesignationByName(@RequestParam String designation, @RequestParam int compId, 
+			@RequestParam int desigId){
+		
+		Designation res = new Designation();
+		try {
+			if(desigId!=0) {
+				res = desigRepo.findByDesignationIgnoreCaseAndExInt1AndDelStatusAndDesignationIdNot(designation, compId, 0, desigId);
+			}else {
+				res = desigRepo.findByDesignationIgnoreCaseAndExInt1AndDelStatus(designation, compId, 0);
+			}
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		return res;
+	}
+	
 	/********************************************************************************/
 	
 	@RequestMapping(value = { "/getAllUserTypes" }, method = RequestMethod.POST)
