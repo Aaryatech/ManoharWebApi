@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ats.manoharweb.models.Category;
 import com.ats.manoharweb.models.Images;
 import com.ats.manoharweb.models.Info;
+import com.ats.manoharweb.models.SubCat;
 import com.ats.manoharweb.repo.CategoryRepo;
 import com.ats.manoharweb.repo.ImagesRepo;
+import com.ats.manoharweb.repo.SubCatRepo;
 
 @RestController
 public class ProductApiController {
@@ -23,6 +25,8 @@ public class ProductApiController {
 	@Autowired CategoryRepo catRepo;
 	
 	@Autowired ImagesRepo imagesRepo;
+	
+	@Autowired SubCatRepo subCatRepo;
 	
 	@RequestMapping(value = { "/getCatCodeCount" }, method = RequestMethod.POST)
 	public @ResponseBody int getMnUserById(@RequestParam String catName, @RequestParam int compId){
@@ -166,4 +170,95 @@ public class ProductApiController {
 
 			return res;
 		}
+		/****************************************************************************/
+		
+		@RequestMapping(value = { "/insertSubCategory" }, method = RequestMethod.POST)
+		public @ResponseBody SubCat insertSubCategory(@RequestBody SubCat subCat){
+			SubCat subcat = new SubCat();
+			try {
+				subcat = subCatRepo.save(subCat);			
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return subcat;
+		}
+		
+		@RequestMapping(value = { "/getAllSubCategory" }, method = RequestMethod.POST)
+		public @ResponseBody List<SubCat> getAllSubCategory(@RequestParam int compId){
+			List<SubCat> list = new ArrayList<SubCat>();
+			try {
+				list = subCatRepo.getAllSubCategory(compId);
+				
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return list;
+		}
+		
+		
+		@RequestMapping(value = { "/getSubCategoryById" }, method = RequestMethod.POST)
+		public @ResponseBody SubCat getSubCategoryById(@RequestParam int subCatId){
+			SubCat res = new SubCat();
+			try {
+				res = subCatRepo.findBySubCatIdAndDelStatus(subCatId, 0);
+				
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return res;
+		}
+		
+		
+		@RequestMapping(value = { "/deleteSubCategoryById" }, method = RequestMethod.POST)
+		public @ResponseBody Info deleteSubCategoryById(@RequestParam int subCatId) {
+			Info info = new Info();
+			int res = subCatRepo.deleteBySubCatId(subCatId);
+			if (res > 0) {
+				int del = imagesRepo.deleteImageByCatId(subCatId);
+				info.setError(false);
+				info.setMessage("Sub-Category deleted successfully");
+			} else {
+				info.setError(true);
+				info.setMessage("Unable to delete Sub-Category!");
+			}
+
+			return info;
+		}
+		
+		
+		@RequestMapping(value = { "/getSubCategoryByName" }, method = RequestMethod.POST)
+		public @ResponseBody SubCat getSubCategoryByName(@RequestParam String subCatName, @RequestParam int subCatId, @RequestParam int compId){
+			SubCat res = new SubCat();
+			try {
+				
+				if(subCatId!=0) {
+					res = subCatRepo.findBySubCatNameIgnoreCaseAndCompanyIdAndDelStatusAndSubCatIdNot(subCatName, compId, 0, subCatId);
+				}else {
+					res = subCatRepo.findBySubCatNameIgnoreCaseAndCompanyIdAndDelStatus(subCatName, compId, 0);
+				}
+				
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return res;
+		}
+		
+		@RequestMapping(value = { "/getSubCategoryByPrefix" }, method = RequestMethod.POST)
+		public @ResponseBody SubCat getSubCategoryByPrefix(@RequestParam String prefix, @RequestParam int subCatId, @RequestParam int compId){
+			SubCat res = new SubCat();
+			try {
+				
+				if(subCatId!=0) {
+					res = subCatRepo.findByPrefixIgnoreCaseAndCompanyIdAndDelStatusAndSubCatIdNot(prefix, compId, 0, subCatId);
+				}else {
+					res = subCatRepo.findByPrefixIgnoreCaseAndCompanyIdAndDelStatus(prefix, compId, 0);
+				}
+				
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return res;
+		}
+		
+		
 }
