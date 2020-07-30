@@ -104,13 +104,10 @@ public interface MUserRepo extends JpaRepository<MUser, Integer> {
 	
 	@Transactional
 	@Modifying
-	@Query(value="UPDATE mn_user_type SET password=:password WHERE user_id=:userId",nativeQuery=true)
+	@Query(value="UPDATE m_user SET password=:password WHERE user_id=:userId",nativeQuery=true)
 	public int updatePassword(@Param("password") String password,@Param("userId") int userId);
 	
 	public MUser findByUserIdAndDelStatus(int userId, int del);
 
-	@Transactional
-	@Modifying
-	@Query(value="UPDATE `mn_user_type` SET password=:newPass WHERE user_id=:userId",nativeQuery=true)
-	int UpdateUserPassword(@Param("userId") int userId, @Param("newPass") String newPass);
+	
 }
