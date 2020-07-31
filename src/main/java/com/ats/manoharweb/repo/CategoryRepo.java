@@ -13,7 +13,7 @@ import javax.transaction.Transactional;
 
 public interface CategoryRepo extends JpaRepository<Category, Integer> {
 
-	@Query(value="SELECT COUNT(category_code) FROM `m_category` WHERE company_id=:compId AND category_code LIKE %:ch%", nativeQuery=true)
+	@Query(value="SELECT COUNT(cat_name) FROM `m_category` WHERE company_id=:compId AND cat_name LIKE %:ch%", nativeQuery=true)
 	public int getMaxCatCodeCount(@Param("ch") char ch, @Param("compId") int compId);
 	
 	Category findByCatNameIgnoreCaseAndCompanyIdAndDelStatus(String catName, int compId, int del);

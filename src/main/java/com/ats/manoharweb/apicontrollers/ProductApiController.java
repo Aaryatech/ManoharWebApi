@@ -11,12 +11,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ats.manoharweb.models.Brands;
 import com.ats.manoharweb.models.Category;
 import com.ats.manoharweb.models.Flavour;
 import com.ats.manoharweb.models.Images;
 import com.ats.manoharweb.models.Info;
 import com.ats.manoharweb.models.SubCat;
 import com.ats.manoharweb.models.Tags;
+import com.ats.manoharweb.repo.BrandsRepo;
 import com.ats.manoharweb.repo.CategoryRepo;
 import com.ats.manoharweb.repo.FlavourRepo;
 import com.ats.manoharweb.repo.ImagesRepo;
@@ -36,6 +38,9 @@ public class ProductApiController {
 	
 	@Autowired FlavourRepo falvourRepo;
 	
+	@Autowired BrandsRepo brandRepo;
+	
+	/**************************************************************************************/
 	@RequestMapping(value = { "/getCatCodeCount" }, method = RequestMethod.POST)
 	public @ResponseBody int getMnUserById(@RequestParam String catName, @RequestParam int compId){
 		
@@ -440,5 +445,87 @@ public class ProductApiController {
 				e.printStackTrace();
 			}
 			return res;
+		}
+		/*******************************************************************************/
+		@RequestMapping(value = { "/getBrandCodeCount"}, method = RequestMethod.POST)
+		public @ResponseBody int getBrandCodeCount(@RequestParam String brandName, @RequestParam int compId){
+			
+			int codeCount = 0;
+			try {
+				char ch = brandName.charAt(0);			
+				System.out.println("Character at 0 index is: "+ch);
+				
+				codeCount = brandRepo.getMaxBrandCodeCount(ch, compId);
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return codeCount;
+		}
+		
+		@RequestMapping(value = { "/getBrandByName"}, method = RequestMethod.POST)
+		public @ResponseBody Brands getBrandByName(@RequestParam String brandName, @RequestParam int compId, @RequestParam int brandId){
+			Brands brand = new Brands();
+			try {
+				if(brandId!=0) {
+					brand = brandRepo.findByCompanyIdAndDelStatusAndBrandNameIgnoreCaseAndBrandIdNot(compId, 0, brandName, brandId);
+				}else {
+					brand = brandRepo.findByCompanyIdAndDelStatusAndBrandNameIgnoreCase(compId, 0, brandName);
+				}
+				
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return brand;
+		}
+		
+		@RequestMapping(value = { "/getBrandById"}, method = RequestMethod.POST)
+		public @ResponseBody Brands getBrandById(@RequestParam int brandId, @RequestParam int compId){
+			Brands brand = new Brands();
+			try {
+				brand = brandRepo.findByCompanyIdAndBrandId(compId, brandId);
+				
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return brand;
+		}
+		
+		@RequestMapping(value = { "/getAllBrands"}, method = RequestMethod.POST)
+		public @ResponseBody List<Brands> getAllBrands(@RequestParam int compId){
+			List<Brands> list = new ArrayList<Brands>();
+			try {
+				list = brandRepo.findByCompanyIdAndDelStatusOrderByBrandIdDesc(compId, 0);
+				
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return list;
+		}
+		
+		@RequestMapping(value = { "/insertBrand"}, method = RequestMethod.POST)
+		public @ResponseBody Brands insertBrand(@RequestBody Brands brand){
+			Brands newBrand = new Brands();
+			try {
+				newBrand = brandRepo.save(brand);	
+				
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return newBrand;
+		}
+		
+		@RequestMapping(value = { "/deleteBrand" }, method = RequestMethod.POST)
+		public @ResponseBody Info deleteBrandById(@RequestParam int brandId) {
+			Info info = new Info();
+			int res = brandRepo.deleteBrandById(brandId);
+			if (res > 0) {
+				info.setError(false);
+				info.setMessage("Brand Deleted Successfully");
+			} else {
+				info.setError(true);
+				info.setMessage("Failed to Delete Brand!");
+			}
+
+			return info;
 		}
 }
