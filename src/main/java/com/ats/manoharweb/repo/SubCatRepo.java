@@ -50,4 +50,5 @@ public interface SubCatRepo extends JpaRepository<SubCat, Integer> {
 
 	SubCat findByPrefixIgnoreCaseAndCompanyIdAndDelStatus(String prefix, int compId, int i);
 	
+	List<SubCat> findByCatIdAndCompanyIdAndDelStatus(int catId, int compId, int del);
 }

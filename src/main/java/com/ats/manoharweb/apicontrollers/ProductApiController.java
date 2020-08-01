@@ -16,14 +16,20 @@ import com.ats.manoharweb.models.Category;
 import com.ats.manoharweb.models.Flavour;
 import com.ats.manoharweb.models.Images;
 import com.ats.manoharweb.models.Info;
+import com.ats.manoharweb.models.ProductStatus;
+import com.ats.manoharweb.models.RawMaterialUom;
 import com.ats.manoharweb.models.SubCat;
 import com.ats.manoharweb.models.Tags;
+import com.ats.manoharweb.models.TaxInfo;
 import com.ats.manoharweb.repo.BrandsRepo;
 import com.ats.manoharweb.repo.CategoryRepo;
 import com.ats.manoharweb.repo.FlavourRepo;
 import com.ats.manoharweb.repo.ImagesRepo;
+import com.ats.manoharweb.repo.ProductStatusRepo;
+import com.ats.manoharweb.repo.RawMaterialUomRepository;
 import com.ats.manoharweb.repo.SubCatRepo;
 import com.ats.manoharweb.repo.TagRepo;
+import com.ats.manoharweb.repo.TaxInfoRepo;
 
 @RestController
 public class ProductApiController {
@@ -39,6 +45,12 @@ public class ProductApiController {
 	@Autowired FlavourRepo falvourRepo;
 	
 	@Autowired BrandsRepo brandRepo;
+	
+	@Autowired TaxInfoRepo taxRepo;
+	
+	@Autowired ProductStatusRepo productRepo;
+	
+	@Autowired RawMaterialUomRepository uomRepo;
 	
 	/**************************************************************************************/
 	@RequestMapping(value = { "/getCatCodeCount" }, method = RequestMethod.POST)
@@ -221,6 +233,19 @@ public class ProductApiController {
 			return res;
 		}
 		
+		
+		@RequestMapping(value = { "/getSubCatByCatIdAndCompId" }, method = RequestMethod.POST)
+		public @ResponseBody List<SubCat> getSubCatByCatIdAndCompId(@RequestParam int catId, int compId){
+			
+			List<SubCat> res = new ArrayList<SubCat>();
+			try {
+				res = subCatRepo.findByCatIdAndCompanyIdAndDelStatus(catId, compId, 0);
+				
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return res;
+		}
 		
 		@RequestMapping(value = { "/deleteSubCategoryById" }, method = RequestMethod.POST)
 		public @ResponseBody Info deleteSubCategoryById(@RequestParam int subCatId) {
@@ -527,5 +552,161 @@ public class ProductApiController {
 			}
 
 			return info;
+		}
+		
+		/*******************************************************************************/
+		@RequestMapping(value = { "/getTaxByTaxName"}, method = RequestMethod.POST)
+		public @ResponseBody TaxInfo getTaxByTaxName(@RequestParam String taxTitle, @RequestParam int compId, @RequestParam int taxId){
+			
+			TaxInfo tax = new TaxInfo();
+			try {
+				if(taxId!=0) {
+					tax = taxRepo.findByCompanyIdAndDelStatusAndTaxTitleIgnoreCaseAndTaxInfoIdNot(compId, 0, taxTitle, taxId);
+				}else {
+					tax = taxRepo.findByCompanyIdAndDelStatusAndTaxTitleIgnoreCase(compId, 0, taxTitle);
+				}
+				
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return tax;
+		}
+		
+		@RequestMapping(value = { "/getTaxById"}, method = RequestMethod.POST)
+		public @ResponseBody TaxInfo getTaxById(@RequestParam int taxId, @RequestParam int compId){
+			
+			TaxInfo tax = new TaxInfo();
+			try {
+				tax = taxRepo.findByCompanyIdAndTaxInfoId(compId, taxId);				
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return tax;
+		}
+		
+
+		@RequestMapping(value = { "/getAllTaxes"}, method = RequestMethod.POST)
+		public @ResponseBody List<TaxInfo> getAllTaxes(@RequestParam int compId){
+			List<TaxInfo> list = new ArrayList<TaxInfo>();
+			try {
+				list = taxRepo.findByCompanyIdAndDelStatusOrderByTaxInfoIdDesc(compId, 0);
+				
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return list;
+		}
+		
+		@RequestMapping(value = { "/insertTaxInfo"}, method = RequestMethod.POST)
+		public @ResponseBody TaxInfo insertTaxInfo(@RequestBody TaxInfo tax){
+			TaxInfo newTax = new TaxInfo();
+			try {
+				newTax = taxRepo.save(tax);	
+				
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return newTax;
+		}
+		
+		@RequestMapping(value = { "/deleteTax" }, method = RequestMethod.POST)
+		public @ResponseBody Info deleteTax(@RequestParam int taxId) {
+			Info info = new Info();
+			int res = taxRepo.deleteTaxById(taxId);
+			if (res > 0) {
+				info.setError(false);
+				info.setMessage("Tax Deleted Successfully");
+			} else {
+				info.setError(true);
+				info.setMessage("Failed to Delete Tax!");
+			}
+
+			return info;
+		}
+		
+		/*******************************************************************************/
+		
+		
+		@RequestMapping(value = { "/getProductStatusById"}, method = RequestMethod.POST)
+		public @ResponseBody ProductStatus getProductStatusById(@RequestParam int productId, @RequestParam int compId){
+			
+			ProductStatus product = new ProductStatus();
+			try {
+				product = productRepo.findByCompanyIdAndProductStatusId(compId, productId);
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return product;
+		}
+		
+		@RequestMapping(value = { "/getAllProductStatus"}, method = RequestMethod.POST)
+		public @ResponseBody List<ProductStatus> getAllProductStatus(@RequestParam int compId){
+			List<ProductStatus> list = new ArrayList<ProductStatus>();
+			try {
+				list = productRepo.findByDelStatusAndCompanyIdOrderByProductStatusIdDesc(0, compId);
+				
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return list;
+		}
+		
+		@RequestMapping(value = { "/insertProductStatus"}, method = RequestMethod.POST)
+		public @ResponseBody ProductStatus insertProductStatus(@RequestBody ProductStatus product){
+			ProductStatus prduct = new ProductStatus();
+			try {
+				prduct = productRepo.save(product);	
+				
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return prduct;
+		}
+		
+		@RequestMapping(value = { "/deleteProductStatus" }, method = RequestMethod.POST)
+		public @ResponseBody Info deleteProductStatus(@RequestParam int productId) {
+			Info info = new Info();
+			int res = productRepo.deleteProductStatusById(productId);
+			if (res > 0) {
+				info.setError(false);
+				info.setMessage("Product Status Deleted Successfully");
+			} else {
+				info.setError(true);
+				info.setMessage("Failed to Delete Product Status!");
+			}
+
+			return info;
+		}
+		
+		@RequestMapping(value = { "/getProductStatusByName"}, method = RequestMethod.POST)
+		public @ResponseBody ProductStatus getProductStatusByName(@RequestParam String product, @RequestParam int compId, @RequestParam int productId){
+			
+			ProductStatus res = new ProductStatus();
+			try {
+				if(productId!=0) {
+					res = productRepo.findByDelStatusAndCompanyIdAndProductStatusAndProductStatusIdNot(0, compId, product, productId);
+				}else {
+					res = productRepo.findByDelStatusAndCompanyIdAndProductStatus(0, compId, product);
+				}
+				
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return res;
+		}
+		
+		/***********************************************************************************/
+		@RequestMapping(value = { "/getRmUom" }, method = RequestMethod.GET)
+		public @ResponseBody List<RawMaterialUom> getRmUom() {
+			List<RawMaterialUom> rawMaterialUomList = uomRepo.findAllByDelStatus(0);
+			if(rawMaterialUomList!=null)
+			{
+				System.out.println("RM UOM List : "+rawMaterialUomList.toString());
+			}
+			else
+			{
+				System.out.println("RM UOM List empty");
+			}
+			return rawMaterialUomList;
 		}
 }
