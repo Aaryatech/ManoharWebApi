@@ -14,19 +14,33 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ats.manoharweb.models.Brands;
 import com.ats.manoharweb.models.Category;
 import com.ats.manoharweb.models.Flavour;
+import com.ats.manoharweb.models.GetItemDetails;
 import com.ats.manoharweb.models.Images;
 import com.ats.manoharweb.models.Info;
+import com.ats.manoharweb.models.Item;
+import com.ats.manoharweb.models.ItemRateIdBean;
 import com.ats.manoharweb.models.ProductStatus;
+import com.ats.manoharweb.models.RateType;
 import com.ats.manoharweb.models.RawMaterialUom;
+import com.ats.manoharweb.models.SkuConfigDetail;
+import com.ats.manoharweb.models.SkuConfiguration;
+import com.ats.manoharweb.models.SkuItemDtl;
 import com.ats.manoharweb.models.SubCat;
 import com.ats.manoharweb.models.Tags;
 import com.ats.manoharweb.models.TaxInfo;
 import com.ats.manoharweb.repo.BrandsRepo;
 import com.ats.manoharweb.repo.CategoryRepo;
 import com.ats.manoharweb.repo.FlavourRepo;
+import com.ats.manoharweb.repo.GetItemDetailsRepo;
 import com.ats.manoharweb.repo.ImagesRepo;
+import com.ats.manoharweb.repo.ItemRateIdBeanRepo;
+import com.ats.manoharweb.repo.ItemRepo;
 import com.ats.manoharweb.repo.ProductStatusRepo;
+import com.ats.manoharweb.repo.RateTypeRepo;
 import com.ats.manoharweb.repo.RawMaterialUomRepository;
+import com.ats.manoharweb.repo.SkuConfigDetailRepo;
+import com.ats.manoharweb.repo.SkuConfigurationRepo;
+import com.ats.manoharweb.repo.SkuItemDtlRepo;
 import com.ats.manoharweb.repo.SubCatRepo;
 import com.ats.manoharweb.repo.TagRepo;
 import com.ats.manoharweb.repo.TaxInfoRepo;
@@ -51,6 +65,20 @@ public class ProductApiController {
 	@Autowired ProductStatusRepo productRepo;
 	
 	@Autowired RawMaterialUomRepository uomRepo;
+	
+	@Autowired ItemRepo itemRepo;
+	
+	@Autowired RateTypeRepo rateTypRepo;
+	
+	@Autowired SkuConfigurationRepo skuConfigRepo;
+	
+	@Autowired ItemRateIdBeanRepo itemRateConfigRepo;
+	
+	@Autowired SkuConfigDetailRepo skuConfigDtlRepo;
+	
+	@Autowired SkuItemDtlRepo skuDtlRepo;
+	
+	@Autowired GetItemDetailsRepo getItmRepo;
 	
 	/**************************************************************************************/
 	@RequestMapping(value = { "/getCatCodeCount" }, method = RequestMethod.POST)
@@ -709,4 +737,227 @@ public class ProductApiController {
 			}
 			return rawMaterialUomList;
 		}
+		
+/**************************************************************************/
+		
+		@RequestMapping(value = {"/insertItem" }, method = RequestMethod.POST)
+		public @ResponseBody Item getCategoryByName(@RequestBody Item item){
+			Item res = new Item();
+			try {
+				res =  itemRepo.save(item);			
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return res;
+		}
+		
+		@RequestMapping(value = {"/getAllItems" }, method = RequestMethod.POST)
+		public @ResponseBody List<Item> getAllItems(@RequestParam int compId){
+			List<Item> res = new ArrayList<Item>();
+			try {
+				res =  itemRepo.findByCompanyIdAndDelStatusOrderByItemIdDesc(compId, 0);
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return res;
+		}
+		
+		@RequestMapping(value = {"/getItemsById" }, method = RequestMethod.POST)
+		public @ResponseBody Item getItemsById(@RequestParam int itemId, @RequestParam int compId){
+			Item res = new Item();
+			try {
+				res =  itemRepo.findByItemIdAndCompanyId(itemId, compId);
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return res;
+		}
+		
+		
+		@RequestMapping(value = { "/deleteItemDtl" }, method = RequestMethod.POST)
+		public @ResponseBody Info deleteItemDtl(@RequestParam int itemId) {
+
+			Info info = new Info();
+			//System.out.println("List-----------"+skuDtlList);
+			int res = itemRepo.deleteItem(itemId);
+			if (res > 0) {
+				info.setError(false);
+				info.setMessage("Success");
+			} else {
+				info.setError(true);
+				info.setMessage("Failed");
+			}
+
+			return info;
+		}
+		
+		/*************************************************************************************/
+		
+		@RequestMapping(value = {"/getAllItemsDetails" }, method = RequestMethod.POST)
+		public @ResponseBody List<GetItemDetails> getAllItemsDetails(@RequestParam int compId){
+			List<GetItemDetails> res = new ArrayList<GetItemDetails>();
+			try {
+				res =  getItmRepo.getItemDetails(compId);
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return res;
+		}
+		
+		/*****************************************************************************/
+		@RequestMapping(value = {"/getAllRateType" }, method = RequestMethod.POST)
+		public @ResponseBody List<RateType> getAllRateType(@RequestParam int compId){
+			List<RateType> res = new ArrayList<RateType>();
+			try {
+				res =  rateTypRepo.findByDelStatusAndCompanyIdOrderBySkuRateTypeIdDesc(0, compId);
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return res;
+		}
+		
+		
+		@RequestMapping(value = { "/insertItemSkuConfig" }, method = RequestMethod.POST)
+		public @ResponseBody SkuConfiguration insertItemSkuConfig(@RequestBody SkuConfiguration config) {
+			
+			SkuConfiguration sku = new SkuConfiguration();
+			sku = skuConfigRepo.save(config);
+			return sku;
+		}
+		
+		
+		@RequestMapping(value = {"/getAllRateTypeByItemId" }, method = RequestMethod.POST)
+		public @ResponseBody List<SkuConfiguration> getAllRateTypeByItemId(@RequestParam int compId, @RequestParam int itemId){
+			List<SkuConfiguration> res = new ArrayList<SkuConfiguration>();
+			try {
+				res =  skuConfigRepo.findByDelStatusAndCompanyIdAndItemId(compId, itemId);
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return res;
+		}
+		
+		/*****************************************************************************/
+		@RequestMapping(value = {"/getItemRateSkuConfig" }, method = RequestMethod.POST)
+		public @ResponseBody List<ItemRateIdBean> getItemRateSkuConfig(@RequestParam int compId, @RequestParam int itemId){
+			List<ItemRateIdBean> res = new ArrayList<ItemRateIdBean>();
+			try {
+				res =  itemRateConfigRepo.getAllRateTypeItemConfig(compId, itemId);
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return res;
+		}
+		
+		
+		/****************************************************************/		
+		@RequestMapping(value = { "/insertSkuConfigDtl" }, method = RequestMethod.POST)
+		public @ResponseBody Info insertSkuConfigDtl(@RequestBody List<SkuConfigDetail> skuDtlList) {
+
+			Info info = new Info();
+			//System.out.println("List-----------"+skuDtlList);
+			List<SkuConfigDetail> res = skuConfigDtlRepo.saveAll(skuDtlList);
+			if (res != null) {
+				info.setError(false);
+				info.setMessage("Success");
+			} else {
+				info.setError(true);
+				info.setMessage("Failed");
+			}
+
+			return info;
+		}
+		
+		/*************************************************************************/
+		
+		@RequestMapping(value = {"/getSkuDtlList" }, method = RequestMethod.POST)
+		public @ResponseBody List<SkuItemDtl> getSkuDtlList(@RequestParam int compId){
+			List<SkuItemDtl> res = new ArrayList<SkuItemDtl>();
+			try {
+				res =  skuDtlRepo.getAllSkuDtls(compId);
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return res;
+		}
+		
+		@RequestMapping(value = { "/updateSkuDtl" }, method = RequestMethod.POST)
+		public @ResponseBody Info updateSkuDtl(@RequestParam int skuId, @RequestParam String skuName, @RequestParam int skuUom, 
+				@RequestParam float skuStockQty, @RequestParam float skuSellStock) {
+
+			Info info = new Info();
+			int res = skuConfigRepo.updateSku(skuId, skuName, skuUom, skuStockQty, skuSellStock);
+			if (res > 0 ) {
+				info.setError(false);
+				info.setMessage("SKU Configuration Update Successfully");
+			} else {
+				info.setError(true);
+				info.setMessage("Failed to Update SKU Configuration");
+			}
+
+			return info;
+		}
+		
+		
+		@RequestMapping(value = { "/deleteSkuConfigDtl" }, method = RequestMethod.POST)
+		public @ResponseBody Info deleteSkuConfigDtl(@RequestParam int skuDtlId) {
+
+			Info info = new Info();
+			int res = skuConfigRepo.deleteSkuConfiguration(skuDtlId);
+			
+			if (res > 0 ) {
+				int i = skuConfigDtlRepo.deleteSkuDtlById(skuDtlId);
+				info.setError(false);
+				info.setMessage("SKU Detail Deleted Successfully");
+			} else {
+				info.setError(true);
+				info.setMessage("Failed to Delete SKU Detail");
+			}
+
+			return info;
+		}
+		
+		@RequestMapping(value = { "/deleteSkuConfigDtlByItemId" }, method = RequestMethod.POST)
+		public @ResponseBody Info deleteSkuConfigDtl(@RequestParam int itemId, @RequestParam List<Integer> skuDtlIds) {
+
+			Info info = new Info();
+			int res = skuConfigRepo.deleteSkuConfigurationByItemId(itemId);
+			
+			if (res > 0 ) {
+				int val = 0;
+				for (int i = 0; i < skuDtlIds.size(); i++) {
+					
+				//	System.out.println("Sku Ids-----"+skuDtlIds.get(i));
+					val = skuConfigDtlRepo.deleteSkuDtlById(skuDtlIds.get(i));
+				}
+				 
+				info.setError(false);
+				info.setMessage("SKU Detail Deleted Successfully");
+			} else {
+				info.setError(true);
+				info.setMessage("Failed to Delete SKU Detail");
+			}
+
+			return info;
+		}
+		
+		
+		@RequestMapping(value = { "/deleteSkuDetails" }, method = RequestMethod.POST)
+		public @ResponseBody Info deleteSkuDetails(@RequestParam int skuDtlId) {
+
+			Info info = new Info();
+			int res = skuConfigDtlRepo.deleteSkuDtlById(skuDtlId);
+			
+			if (res > 0 ) {				
+				info.setError(false);
+				info.setMessage("SKU Detail Deleted Successfully");
+			} else {
+				info.setError(true);
+				info.setMessage("Failed to Delete SKU Detail");
+			}
+
+			return info;
+		}
+		
+		
 }
