@@ -353,24 +353,24 @@ public class MasterApiController {
 	
 	/******************************************************************************************/
 	
-	@RequestMapping(value = { "/getAllItems" }, method = RequestMethod.GET)
-	public @ResponseBody List<GetItem> getAllItems() {
+	@RequestMapping(value = { "/getAllRelatedItems" }, method = RequestMethod.POST)
+	public @ResponseBody List<GetItem> getAllItems(@RequestParam int compId) {
 
 		List<GetItem> itemList = new ArrayList<GetItem>();
 		try {
-			itemList = getItemRepo.getAllItems();
+			itemList = getItemRepo.getAllRelatedItems( compId);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return itemList;
 	}
 	
-	@RequestMapping(value = { "/getAllItemsByitemId" }, method = RequestMethod.POST)
-	public @ResponseBody List<GetItem> getAllItemsByitemId(@RequestParam int itemId) {
+	@RequestMapping(value = { "/getAllRelatedItemsByItemId" }, method = RequestMethod.POST)
+	public @ResponseBody List<GetItem> getAllItemsByitemId(@RequestParam int itemId, @RequestParam int compId) {
 
 		List<GetItem> itemList = new ArrayList<GetItem>();
 		try {
-			itemList = getItemRepo.getAllItemsById(itemId);
+			itemList = getItemRepo.getAllRelatedItemsById(itemId, compId);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

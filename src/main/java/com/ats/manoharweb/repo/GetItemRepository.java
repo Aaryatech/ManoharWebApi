@@ -20,65 +20,72 @@ public interface GetItemRepository extends JpaRepository<GetItem, Integer> {
 			"    COALESCE(t2.checked, 0) AS checked\n" + 
 			"FROM\n" + 
 			"    (\n" + 
-			"    SELECT\n" + 
-			"        d.item_id,\n" + 
-			"        i.item_name,\n" + 
-			"        i.item_grp1 AS cat_id\n" + 
-			"    FROM\n" + 
-			"        mn_detail d,\n" + 
-			"        m_item i\n" + 
-			"    WHERE\n" + 
-			"        d.item_id = i.item_id AND d.del_status = 0 AND i.del_status = 0 AND d.is_used = 0 AND d.item_id != 0\n" + 
+			"   SELECT\n" + 
+			"    i.item_id,\n" + 
+			"    i.item_name,\n" + 
+			"    i.cat_id\n" + 
+			"FROM\n" + 
+			"    m_item i\n" + 
+			"WHERE\n" + 
+			"    i.del_status = 0 AND \n" + 
+			"    i.item_is_used=0 And\n" + 
+			"    i.company_id=:compId AND\n" + 
+			"    i.item_id != 0\n" + 
 			") t1\n" + 
 			"LEFT JOIN(\n" + 
-			"    SELECT\n" + 
-			"        dtl.item_id,\n" + 
+			"    SELECT dtl.item_id,\n" + 
 			"        1 AS checked\n" + 
 			"    FROM\n" + 
-			"        mn_detail dtl\n" + 
+			"        m_item dtl\n" + 
 			"    INNER JOIN tn_config_related_product itm ON\n" + 
 			"        FIND_IN_SET(\n" + 
 			"            dtl.item_id,\n" + 
 			"            itm.configr_related_product_ids\n" + 
-			"        ) > 0 AND dtl.del_status = 0 AND dtl.is_used = 0 AND itm.del_status = 0\n" + 
+			"        ) > 0 AND dtl.del_status = 0 AND dtl.item_is_used=0 AND itm.del_status = 0 AND itm.ex_int1=:compId AND itm.ex_int1=:compId\n" + 
 			"    GROUP BY\n" + 
 			"        dtl.item_id\n" + 
 			") t2\n" + 
 			"ON\n" + 
 			"    t1.item_id = t2.item_id",nativeQuery=true)
-		public List<GetItem> getAllItems();
+		public List<GetItem> getAllRelatedItems(@Param("compId") int compId);
 	
 		@Query(value="SELECT\n" + 
-				"    t1.*,\n" + 
-				"    COALESCE(t2.checked, 0) AS checked\n" + 
+				"        t1.*,\n" + 
+				"        COALESCE(t2.checked,\n" + 
+				"        0) AS checked \n" + 
+				"    FROM\n" + 
+				"        (     SELECT\n" + 
+				"    i.item_id,\n" + 
+				"    i.item_name,\n" + 
+				"    i.cat_id\n" + 
 				"FROM\n" + 
-				"    (\n" + 
-				"    SELECT\n" + 
-				"        d.item_id,\n" + 
-				"        i.item_name,\n" + 
-				"        i.item_grp1 AS cat_id\n" + 
-				"    FROM\n" + 
-				"        mn_detail d,\n" + 
-				"        m_item i\n" + 
-				"    WHERE\n" + 
-				"        d.item_id = i.item_id AND d.del_status = 0 AND i.del_status = 0 AND d.is_used = 0 AND d.item_id != :itemId\n" + 
-				") t1\n" + 
-				"LEFT JOIN(\n" + 
-				"    SELECT\n" + 
-				"        dtl.item_id,\n" + 
-				"        1 AS checked\n" + 
-				"    FROM\n" + 
-				"        mn_detail dtl\n" + 
-				"    INNER JOIN tn_config_related_product itm ON\n" + 
-				"        FIND_IN_SET(\n" + 
-				"            dtl.item_id,\n" + 
-				"            itm.configr_related_product_ids\n" + 
-				"        ) > 0 AND dtl.del_status = 0 AND dtl.is_used = 0 AND itm.del_status = 0  AND itm.product_id=:itemId\n" + 
-				"    GROUP BY\n" + 
-				"        dtl.item_id\n" + 
-				") t2\n" + 
-				"ON\n" + 
-				"    t1.item_id = t2.item_id",nativeQuery=true)
-		public List<GetItem> getAllItemsById(@Param("itemId") int itemId);
+				"    m_item i\n" + 
+				"WHERE\n" + 
+				"    i.del_status = 0 AND \n" + 
+				"    i.item_is_used=0 AND\n" + 
+				"    i.company_id=:compId AND\n" + 
+				"    i.item_id !=:itemId ) t1 \n" + 
+				"    LEFT JOIN\n" + 
+				"        (\n" + 
+				"            SELECT\n" + 
+				"                dtl.item_id,\n" + 
+				"                1 AS checked     \n" + 
+				"            FROM\n" + 
+				"                m_item dtl     \n" + 
+				"            INNER JOIN\n" + 
+				"                tn_config_related_product itm \n" + 
+				"                    ON         FIND_IN_SET(             dtl.item_id,\n" + 
+				"                itm.configr_related_product_ids         ) > 0 \n" + 
+				"                AND dtl.del_status = 0 \n" + 
+				"                AND dtl.item_is_used = 0 \n" + 
+				"                AND itm.del_status = 0  \n" + 
+				"                AND itm.product_id=:itemId\n" + 
+				"           	 AND itm.ex_int1=:compId \n" + 
+				"            	 AND dtl.company_id=:compId\n" + 
+				"            GROUP BY\n" + 
+				"                dtl.item_id \n" + 
+				"        ) t2 \n" + 
+				"            ON     t1.item_id = t2.item_id",nativeQuery=true)
+		public List<GetItem> getAllRelatedItemsById(@Param("itemId") int itemId, @Param("compId") int compId);
 }
 
